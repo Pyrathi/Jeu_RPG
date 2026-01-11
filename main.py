@@ -13,8 +13,37 @@ WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 WINDOW_TITLE = "jeu"
 
+class MainMenuView(arcade.View):
+    def __init__(self, game_view):
+        super().__init__()
+        self.game_view = game_view
+    
 
-class GameView(arcade.Window):
+    def on_show_view(self):
+        """Cette fonction s'exécute quand on affiche le menu"""
+        arcade.set_background_color(arcade.color.BEIGE)
+
+    def on_draw(self):
+        self.clear()
+        # Dessiner le titre
+        arcade.draw_text("MON JEU RPG", WINDOW_WIDTH / 2, WINDOW_HEIGHT * 0.7,
+                         arcade.color.BLACK, font_size=50, anchor_x="center")
+        
+        # Dessiner les boutons (on utilise des rectangles pour l'instant)
+        arcade.draw_rect_filled(arcade.XYWH(WINDOW_WIDTH / 2, 400, 200, 50), arcade.color.GRAY)
+        arcade.draw_text("DÉMARRER", WINDOW_WIDTH / 2, 400, arcade.color.BLACK, 
+                         anchor_x="center", anchor_y="center")
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        # Vérifier si on clique sur le bouton "DÉMARRER"
+        if WINDOW_WIDTH / 2 - 100 < x < WINDOW_WIDTH / 2 + 100 and 375 < y < 425:
+            game_view = self.game_view
+            # game_view.setup()  # Si tu as besoin d'initialiser des choses
+            self.window.show_view(game_view)
+
+
+
+class GameView(arcade.View):
     """
     Main application class.
     """
@@ -22,9 +51,9 @@ class GameView(arcade.Window):
     def __init__(self):
 
         # Call the parent class to set up the window
-        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+        super().__init__()
         # Force un rendu net pour les pixels (style rétro)
-        self.ctx.default_texture_filter = (arcade.gl.NEAREST, arcade.gl.NEAREST)
+        
         
         #UI
         self.ui_title_texture=arcade.load_texture("images/UI/title.png")
@@ -80,14 +109,9 @@ class GameView(arcade.Window):
         for perso in self.player_list:
             if perso.collides_with_point((x, y)):
                 self.selected_character = perso
-                if perso == self.mage_sprite:
-                    self.description.append(self.mage_sprite.description_mage_sprite)
-                elif perso == self.soldat_sprite:
-                    self.description.append(self.soldat_sprite.description_soldat_sprite)
-                elif perso == self.archer_sprite:
-                    self.description.append(self.archer_sprite.description_archer_sprite)
-                elif perso == self.voleur_sprite:
-                    self.description.append(self.voleur_sprite.description_voleur_sprite)
+                # Puisque tous les héros ont une variable "fenetre_stats"
+                self.description.append(perso.fenetre_stats)
+                break
                 
         
         
@@ -111,8 +135,10 @@ class GameView(arcade.Window):
 
 def main():
     """Main function"""
-    window = GameView()
-    window.setup()
+    window=arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+    le_jeu_charge = GameView()
+    menu = MainMenuView(le_jeu_charge)
+    window.show_view(menu)
     arcade.run()
 
 

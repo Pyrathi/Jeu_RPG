@@ -20,8 +20,13 @@ class Soldat(EntiteAnimee):
         self.ui_soldat_sprite.center_y=600
         #Description
         self.description_soldat_texture=arcade.load_texture("images/soldat/UI/fenetre_description.png")
-        self.description_soldat_sprite=arcade.Sprite(self.description_soldat_texture,scale=0.8)
-        self.description_soldat_sprite.center_x=1150
-        self.description_soldat_sprite.center_y=400
+        self.fenetre_stats=arcade.Sprite(self.description_soldat_texture,scale=0.8)
+        self.fenetre_stats.center_x=1150
+        self.fenetre_stats.center_y=400
+        
+        #Stats
+        self.sante = 100
+        self.mana = 0
+        self.defense = 60
 
     

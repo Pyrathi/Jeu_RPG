@@ -20,8 +20,12 @@ class Mage(EntiteAnimee):
         self.ui_mage_sprite.center_y=600
         #Description
         self.description_mage_texture=arcade.load_texture("images/mage/UI/fenetre_description.png")
-        self.description_mage_sprite=arcade.Sprite(self.description_mage_texture,scale=0.8)
-        self.description_mage_sprite.center_x=450     
-        self.description_mage_sprite.center_y=400
+        self.fenetre_stats=arcade.Sprite(self.description_mage_texture,scale=0.8)
+        self.fenetre_stats.center_x=450     
+        self.fenetre_stats.center_y=400
     
+        #Stats
+        self.sante = 50 
+        self.mana = 100
+        self.defense = 10
     

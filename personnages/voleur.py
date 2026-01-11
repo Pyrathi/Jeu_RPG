@@ -20,8 +20,13 @@ class Voleur(EntiteAnimee):
         self.ui_voleur_sprite.center_y=300
         #Desciption
         self.description_voleur_texture=arcade.load_texture("images/voleur/UI/fenetre_description.png")
-        self.description_voleur_sprite=arcade.Sprite(self.description_voleur_texture,scale=0.8)
-        self.description_voleur_sprite.center_x=1150    
-        self.description_voleur_sprite.center_y=100
+        self.fenetre_stats=arcade.Sprite(self.description_voleur_texture,scale=0.8)
+        self.fenetre_stats.center_x=1150    
+        self.fenetre_stats.center_y=100
+        
+        #Stats
+        self.sante = 80
+        self.mana = 0
+        self.defense = 40
 
     

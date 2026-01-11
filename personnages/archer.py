@@ -20,8 +20,12 @@ class Archer(EntiteAnimee):
         self.ui_archer_sprite.center_y=300
         #Description
         self.description_archer_texture=arcade.load_texture("images/archer/UI/fenetre_description.png")
-        self.description_archer_sprite=arcade.Sprite(self.description_archer_texture,scale=0.8)
-        self.description_archer_sprite.center_x=450     
-        self.description_archer_sprite.center_y=100
-
+        self.fenetre_stats=arcade.Sprite(self.description_archer_texture,scale=0.8)
+        self.fenetre_stats.center_x=450     
+        self.fenetre_stats.center_y=100
+        
+        #Stats
+        self.sante = 60
+        self.mana = 0  
+        self.defense = 20
     
