@@ -6,7 +6,7 @@ from personnages.archer import Archer
 from personnages.mage import Mage
 from personnages.soldat import Soldat
 from personnages.voleur import Voleur
-
+from mobs.loup import Loup
 
 # Constants
 WINDOW_WIDTH = 1280
@@ -47,7 +47,10 @@ class MainMenuView(arcade.View):
                          arcade.color.BLACK, font_size=50, anchor_x="center")
         self.boutons_list.draw()
         
-        
+    def on_key_press(self, key, modifiers):
+    # C'est ici que nous vérifions quelle touche a été pressée
+        if key==arcade.key.ESCAPE:
+            self.window.set_fullscreen(False)
 
     def on_mouse_press(self, x, y, button, modifiers):
         # Vérifier si on clique sur le bouton "DÉMARRER"
@@ -129,6 +132,17 @@ class GameView(arcade.View):
                 self.description.append(perso.bouton_choisir_sprite)
                 break
                 
+        if self.selected_character is not None and self.selected_character.bouton_choisir_sprite.collides_with_point((x, y)):
+            # Passer à la vue du niveau avec le personnage sélectionné
+            level_view = LevelView(self.selected_character)
+            self.window.show_view(level_view)
+            return 
+        
+    def on_key_press(self, key, modifiers):
+    # C'est ici que nous vérifions quelle touche a été pressée
+        if key==arcade.key.ESCAPE:
+            self.window.set_fullscreen(False)
+            
     def on_mouse_motion(self, x, y, dx, dy):
         for bouton in self.player_list:
             if bouton.bouton_choisir_sprite.collides_with_point((x, y)):
@@ -155,10 +169,51 @@ class GameView(arcade.View):
 
         # Code to draw other things will go here
 
+class LevelView(arcade.View):
+    """View to show the level of the game."""
+    def __init__(self,personnage):
+        super().__init__()
+        self.personnage=personnage
+        # Initialisation du niveau
+        self.background_color = arcade.csscolor.BEIGE
+        self.liste_personnages=arcade.SpriteList()
+        self.personnage.center_x=520
+        self.personnage.center_y=260
+        self.liste_personnages.append(self.personnage)
+        self.liste_mobs=arcade.SpriteList()
+        self.loup=Loup()
+        self.liste_mobs.append(self.loup)
+        
+        
+        
+        #décor
+        self.decor_texture=arcade.load_texture("images/decor/clairiere.png")
+        self.decor_sprite=arcade.Sprite(self.decor_texture,scale=0.7)
+        self.decor_sprite.center_x=WINDOW_WIDTH//2
+        self.decor_sprite.center_y=WINDOW_HEIGHT//2
+        self.decor_sprite_list=arcade.SpriteList()
+        self.decor_sprite_list.append(self.decor_sprite)
+        
+    def on_update(self, delta_time):
+        self.liste_personnages.update()
+        self.liste_mobs.update()
+   
+    def on_draw(self):
+        self.clear()
+        self.decor_sprite_list.draw()
+        self.liste_personnages.draw()
+        self.liste_mobs.draw()
+    
+    def on_key_press(self, key, modifiers):
+    # C'est ici que nous vérifions quelle touche a été pressée
+        if key==arcade.key.ESCAPE:
+        	self.window.set_fullscreen(False)
+        
+        
 
 def main():
     """Main function"""
-    window=arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+    window=arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE,fullscreen=True)
     le_jeu_charge = GameView()
     menu = MainMenuView(le_jeu_charge)
     window.show_view(menu)
