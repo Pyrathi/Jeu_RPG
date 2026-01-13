@@ -18,6 +18,10 @@ class Archer(EntiteAnimee):
         self.ui_archer_sprite=arcade.Sprite(self.ui_archer_texture,scale=0.5)
         self.ui_archer_sprite.center_x=250
         self.ui_archer_sprite.center_y=300
+        self.bouton_choisir_texture=arcade.load_texture("images/UI/choisir1.png")
+        self.bouton_choisir_sprite=arcade.Sprite(self.bouton_choisir_texture,scale=0.5)
+        self.bouton_choisir_sprite.center_x=395
+        self.bouton_choisir_sprite.center_y=150
         #Description
         self.description_archer_texture=arcade.load_texture("images/archer/UI/fenetre_description.png")
         self.fenetre_stats=arcade.Sprite(self.description_archer_texture,scale=0.8)

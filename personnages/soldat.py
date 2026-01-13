@@ -18,6 +18,10 @@ class Soldat(EntiteAnimee):
         self.ui_soldat_sprite=arcade.Sprite(self.ui_soldat_texture,scale=0.5)
         self.ui_soldat_sprite.center_x=950
         self.ui_soldat_sprite.center_y=600
+        self.bouton_choisir_texture=arcade.load_texture("images/UI/choisir1.png")
+        self.bouton_choisir_sprite=arcade.Sprite(self.bouton_choisir_texture,scale=0.5)
+        self.bouton_choisir_sprite.center_x=1100
+        self.bouton_choisir_sprite.center_y=450
         #Description
         self.description_soldat_texture=arcade.load_texture("images/soldat/UI/fenetre_description.png")
         self.fenetre_stats=arcade.Sprite(self.description_soldat_texture,scale=0.8)

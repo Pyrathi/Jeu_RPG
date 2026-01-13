@@ -18,6 +18,12 @@ class Mage(EntiteAnimee):
         self.ui_mage_sprite=arcade.Sprite(self.ui_mage_texture,scale=0.5)
         self.ui_mage_sprite.center_x=250
         self.ui_mage_sprite.center_y=600
+        self.bouton_choisir_texture=arcade.load_texture("images/UI/choisir1.png")
+        self.bouton_choisir_sprite=arcade.Sprite(self.bouton_choisir_texture,scale=0.5)
+        self.bouton_choisir_sprite.center_x=395
+        self.bouton_choisir_sprite.center_y=450
+        
+        
         #Description
         self.description_mage_texture=arcade.load_texture("images/mage/UI/fenetre_description.png")
         self.fenetre_stats=arcade.Sprite(self.description_mage_texture,scale=0.8)

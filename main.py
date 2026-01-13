@@ -17,7 +17,24 @@ class MainMenuView(arcade.View):
     def __init__(self, game_view):
         super().__init__()
         self.game_view = game_view
-    
+        self.start_button_texture = arcade.load_texture("images/UI/demarrer1.png")
+        self.start_button_sprite = arcade.Sprite(self.start_button_texture, scale=1.5)
+        self.start_button_sprite.center_x = WINDOW_WIDTH / 2
+        self.start_button_sprite.center_y = 400
+        self.start_button_texture_hover = arcade.load_texture("images/UI/demarrer2.png")
+        self.start_button_hover = arcade.Sprite(self.start_button_texture_hover, scale=1.5)
+        
+        self.boutons_list = arcade.SpriteList()
+        self.boutons_list.append(self.start_button_sprite)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        # 2. On vérifie si la souris (x, y) est sur le bouton
+        if self.start_button_sprite.collides_with_point((x, y)):
+            # On change pour l'image "survolée"
+            self.start_button_sprite.texture = self.start_button_texture_hover
+        else:
+            # On remet l'image normale
+            self.start_button_sprite.texture = self.start_button_texture
 
     def on_show_view(self):
         """Cette fonction s'exécute quand on affiche le menu"""
@@ -28,11 +45,9 @@ class MainMenuView(arcade.View):
         # Dessiner le titre
         arcade.draw_text("MON JEU RPG", WINDOW_WIDTH / 2, WINDOW_HEIGHT * 0.7,
                          arcade.color.BLACK, font_size=50, anchor_x="center")
+        self.boutons_list.draw()
         
-        # Dessiner les boutons (on utilise des rectangles pour l'instant)
-        arcade.draw_rect_filled(arcade.XYWH(WINDOW_WIDTH / 2, 400, 200, 50), arcade.color.GRAY)
-        arcade.draw_text("DÉMARRER", WINDOW_WIDTH / 2, 400, arcade.color.BLACK, 
-                         anchor_x="center", anchor_y="center")
+        
 
     def on_mouse_press(self, x, y, button, modifiers):
         # Vérifier si on clique sur le bouton "DÉMARRER"
@@ -70,7 +85,6 @@ class GameView(arcade.View):
         self.selected_character = None
         
         
-        
         self.ui_list = arcade.SpriteList()
         self.ui_list.append(self.mage_sprite.ui_mage_sprite)
         self.ui_list.append(self.soldat_sprite.ui_soldat_sprite)
@@ -88,6 +102,7 @@ class GameView(arcade.View):
         self.description = arcade.SpriteList()
         
         
+        self.bouton_choisir_texture_hover=arcade.load_texture("images/UI/choisir2.png")
         
         
         
@@ -111,9 +126,17 @@ class GameView(arcade.View):
                 self.selected_character = perso
                 # Puisque tous les héros ont une variable "fenetre_stats"
                 self.description.append(perso.fenetre_stats)
+                self.description.append(perso.bouton_choisir_sprite)
                 break
                 
-        
+    def on_mouse_motion(self, x, y, dx, dy):
+        for bouton in self.player_list:
+            if bouton.bouton_choisir_sprite.collides_with_point((x, y)):
+            # On change pour l'image "survolée"
+                bouton.bouton_choisir_sprite.texture = self.bouton_choisir_texture_hover
+            else:
+            # On remet l'image normale
+                bouton.bouton_choisir_sprite.texture = bouton.bouton_choisir_texture
         
     def on_draw(self):
         """Render the screen."""
