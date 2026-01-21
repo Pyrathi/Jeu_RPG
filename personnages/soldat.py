@@ -30,6 +30,7 @@ class Soldat(EntiteAnimee):
         
         #Stats
         self.sante = 100
+        self.sante_max = 100
         self.mana = 0
         self.defense = 60
 

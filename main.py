@@ -293,7 +293,14 @@ class CombatView(arcade.View):
         self.decor_sprite.center_y=WINDOW_HEIGHT//2
         self.decor_sprite_list=arcade.SpriteList()
         self.decor_sprite_list.append(self.decor_sprite)
+        #barre de vie
+        self.LARGEUR_BARRE = 100
+        self.barre_x = self.personnage.center_x - self.LARGEUR_BARRE // 2 - 20
+        self.barre_y = self.personnage.center_y + 50
+        self.mob_barre_x = self.mob.center_x - self.LARGEUR_BARRE // 2 - 20
+        self.mob_barre_y = self.mob.center_y + 70
         
+
     def on_update(self, delta_time):
         self.liste_personnages.update()
         self.liste_mobs.update()
@@ -304,6 +311,66 @@ class CombatView(arcade.View):
         self.liste_personnages.draw()
         self.liste_mobs.draw()
         self.ui_combat_list.draw()
+        
+        # --- Paramètres de la barre ---
+        LARGEUR_TOTALE = 100
+        HAUTEUR = 12
+        arcade.draw_lbwh_rectangle_filled(self.barre_x, self.barre_y, self.LARGEUR_BARRE, HAUTEUR, arcade.color.BLACK)
+        ratio_vie = self.personnage.sante / self.personnage.sante_max
+        largeur_vie_actuelle = LARGEUR_TOTALE * ratio_vie
+        bord_gauche = self.barre_x - (LARGEUR_TOTALE / 2)
+        arcade.draw_lbwh_rectangle_filled(self.barre_x, self.barre_y, 
+                                    largeur_vie_actuelle, HAUTEUR, arcade.color.GREEN)
+        # Barre de vie du mob
+        arcade.draw_lbwh_rectangle_filled(self.mob_barre_x, self.mob_barre_y, self.LARGEUR_BARRE, 10, arcade.color.BLACK)
+        ratio_vie_mob = self.mob.sante / self.mob.sante_max
+        largeur_vie_actuelle_mob = LARGEUR_TOTALE * ratio_vie_mob
+        bord_gauche_mob = self.mob_barre_x - (LARGEUR_TOTALE / 2)
+        arcade.draw_lbwh_rectangle_filled(self.mob_barre_x, self.mob_barre_y, 
+                                    largeur_vie_actuelle_mob, HAUTEUR, arcade.color.RED)
+                                    
+        # Barre de mana
+        if self.personnage.mana > 0:
+            HAUTEUR_MANA = 8
+            barre_mana_x = self.personnage.center_x - self.LARGEUR_BARRE // 2 - 20
+            barre_mana_y = self.personnage.center_y + 70
+            arcade.draw_lbwh_rectangle_filled(self.barre_x, barre_mana_y, self.LARGEUR_BARRE, HAUTEUR_MANA, arcade.color.BLACK)
+            ratio_mana = self.personnage.mana / self.personnage.mana_max
+            largeur_mana_actuelle = LARGEUR_TOTALE * ratio_mana
+            bord_gauche_mana = barre_mana_x - (LARGEUR_TOTALE / 2)
+            arcade.draw_lbwh_rectangle_filled(self.barre_x, barre_mana_y, 
+                                        largeur_mana_actuelle, HAUTEUR_MANA, arcade.color.BLUE)
+        
+        # Nom attaques
+        arcade.draw_text("Attaque normale", 
+                        self.ui_combat_sprite3.center_x, 
+                        self.ui_combat_sprite3.center_y,
+                        arcade.color.BLACK, 
+                        font_size=15, 
+                        anchor_x="center", 
+                        anchor_y="center")
+        if isinstance(self.personnage, Mage):
+            arcade.draw_text("méditaion", 
+                        self.ui_combat_sprite1.center_x, 
+                        self.ui_combat_sprite1.center_y,
+                        arcade.color.BLACK, 
+                        font_size=15, 
+                        anchor_x="center", 
+                        anchor_y="center")
+                        
+    
+    def on_mouse_press(self, x, y, button, modifiers):
+        for choix in self.ui_combat_list:
+    	    if choix.collides_with_point((x, y)):
+                if choix==self.ui_combat_sprite3:
+                    if hasattr(self.personnage, 'attaque_normale'):
+                        self.personnage.attaque_normale(self.mob)
+                        print(f"Santé du mob après attaque : {self.mob.sante}")
+                elif choix==self.ui_combat_sprite1:
+                    if hasattr(self.personnage, 'meditation'):
+                        self.personnage.meditation()
+                        print(f"Mana du personnage après méditation : {self.personnage.mana}")
+        
     
     def on_key_press(self, key, modifiers):
     # C'est ici que nous vérifions quelle touche a été pressée

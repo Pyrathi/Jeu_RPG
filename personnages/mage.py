@@ -32,6 +32,24 @@ class Mage(EntiteAnimee):
     
         #Stats
         self.sante = 50 
+        self.sante_max = 50
         self.mana = 100
+        self.mana_max = 100
         self.defense = 10
+        
+    def attaque_normale(self, cible):
+        degats = 10
+        self.mana -= 15
+        if self.mana < 0:
+            self.mana = 0
+        cible.recevoir_degats(degats)
+
+        cible.choix_attaque(self)
+        print(f"Le mage attaque et inflige {degats} points de dégâts. Santé restante de la cible : {cible.sante}")
+    
+    def meditation(self):
+        mana_recuperee = 25
+        self.mana = min(self.mana + mana_recuperee, self.mana_max)
+        print(f"Le mage médite et récupère {mana_recuperee} points de mana. Mana actuelle : {self.mana}")
+        
     

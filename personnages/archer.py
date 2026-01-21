@@ -30,6 +30,7 @@ class Archer(EntiteAnimee):
         
         #Stats
         self.sante = 60
+        self.sante_max = 60
         self.mana = 0  
         self.defense = 20
     

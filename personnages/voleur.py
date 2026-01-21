@@ -31,6 +31,7 @@ class Voleur(EntiteAnimee):
         
         #Stats
         self.sante = 80
+        self.sante_max = 80
         self.mana = 0
         self.defense = 40
 
