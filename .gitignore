@@ -1,2 +1,5 @@
 images/zip/
 __pycache__/
+personnage/__pycache__/
+tests/__pycache__/
+mobs/__pycache__/
