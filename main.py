@@ -300,6 +300,10 @@ class CombatView(arcade.View):
         self.mob_barre_x = self.mob.center_x - self.LARGEUR_BARRE // 2 - 20
         self.mob_barre_y = self.mob.center_y + 70
         
+        #état de survol
+        self.survol_vie_heros = False
+        self.survol_vie_mob = False
+        self.survol_mana_heros = False
 
     def on_update(self, delta_time):
         self.liste_personnages.update()
@@ -311,6 +315,7 @@ class CombatView(arcade.View):
         self.liste_personnages.draw()
         self.liste_mobs.draw()
         self.ui_combat_list.draw()
+        
         
         # --- Paramètres de la barre ---
         LARGEUR_TOTALE = 100
@@ -332,17 +337,16 @@ class CombatView(arcade.View):
         # Barre de mana
         if self.personnage.mana > 0:
             HAUTEUR_MANA = 8
-            barre_mana_x = self.personnage.center_x - self.LARGEUR_BARRE // 2 - 20
+            
             barre_mana_y = self.personnage.center_y + 70
             arcade.draw_lbwh_rectangle_filled(self.barre_x, barre_mana_y, self.LARGEUR_BARRE, HAUTEUR_MANA, arcade.color.BLACK)
             ratio_mana = self.personnage.mana / self.personnage.mana_max
             largeur_mana_actuelle = LARGEUR_TOTALE * ratio_mana
-            bord_gauche_mana = barre_mana_x - (LARGEUR_TOTALE / 2)
             arcade.draw_lbwh_rectangle_filled(self.barre_x, barre_mana_y, 
                                         largeur_mana_actuelle, HAUTEUR_MANA, arcade.color.BLUE)
         
         # Nom attaques
-        arcade.draw_text("Attaque normale", 
+        arcade.draw_text(f"Attaque normale", 
                         self.ui_combat_sprite3.center_x, 
                         self.ui_combat_sprite3.center_y,
                         arcade.color.BLACK, 
@@ -357,6 +361,37 @@ class CombatView(arcade.View):
                         font_size=15, 
                         anchor_x="center", 
                         anchor_y="center")
+        
+        if self.survol_vie_heros:
+            # Afficher la santé actuelle et maximale
+            arcade.draw_text(f" {self.personnage.sante} / {self.personnage.sante_max}",
+            	self.barre_x + 75,
+            	self.barre_y + 8,
+            	arcade.color.WHITE,
+            	font_size=10,
+            	anchor_x="center",
+            	anchor_y="center"
+            )
+        if self.survol_mana_heros:
+            # Afficher le mana actuelle et maximale
+            arcade.draw_text(f" {self.personnage.mana} / {self.personnage.mana_max}",
+            	self.barre_x + 70,
+            	self.personnage.center_y + 75,
+            	arcade.color.WHITE,
+            	font_size=10,
+            	anchor_x="center",
+            	anchor_y="center"
+            )
+        if self.survol_vie_mob:
+            # Afficher la santé actuelle et maximale du mob
+            arcade.draw_text(f" {self.mob.sante} / {self.mob.sante_max}",
+            	self.mob_barre_x +75,
+            	self.mob_barre_y + 8,
+            	arcade.color.WHITE,
+            	font_size=10,
+            	anchor_x="center",
+            	anchor_y="center"
+            )
                         
     
     def on_mouse_press(self, x, y, button, modifiers):
@@ -366,18 +401,201 @@ class CombatView(arcade.View):
                     if hasattr(self.personnage, 'attaque_normale'):
                         self.personnage.attaque_normale(self.mob)
                         print(f"Santé du mob après attaque : {self.mob.sante}")
-                elif choix==self.ui_combat_sprite1:
+                        if self.mob.sante <= 0:
+                            print("Le mob est vaincu !")
+                            loot=self.mob.drop_loot(self.personnage)
+                            loot_view=LootView(self.personnage,loot,self.lieu_decor,self.mob)
+                            self.window.show_view(loot_view)
+                            
+                elif choix==self.ui_combat_sprite1 and isinstance(self.personnage, Mage):
                     if hasattr(self.personnage, 'meditation'):
                         self.personnage.meditation()
                         print(f"Mana du personnage après méditation : {self.personnage.mana}")
         
-    
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.survol_mana_heros=False
+        self.survol_vie_heros=False
+        self.survol_vie_mob=False
+        if x>self.barre_x and x<self.barre_x+self.LARGEUR_BARRE and y>self.barre_y and y<self.barre_y+12:
+            # Afficher la santé actuelle et maximale
+            self.survol_vie_heros = True
+            
+        elif x>self.mob_barre_x and x<self.mob_barre_x+self.LARGEUR_BARRE and y>self.mob_barre_y and y<self.mob_barre_y+12:
+            # Afficher la santé actuelle et maximale du mob
+            self.survol_vie_mob = True
+            
+        elif x>self.barre_x and x<self.barre_x+self.LARGEUR_BARRE and y>self.personnage.center_y+70 and y<self.personnage.center_y+78:
+            # Afficher le mana actuelle et maximale
+            self.survol_mana_heros = True
+            
+
+
+
     def on_key_press(self, key, modifiers):
     # C'est ici que nous vérifions quelle touche a été pressée
         if key==arcade.key.ESCAPE:
             self.window.set_fullscreen(False)
         if key==arcade.key.F5:
             self.window.show_view(LevelView(self.personnage,self.lieu_decor,self.mob))
+            
+class LootView(arcade.View):
+    """View to show the loot of the game."""
+    def __init__(self,personnage,loot,lieu_decor,mob):
+        super().__init__()
+        self.personnage=personnage
+        self.loot=loot
+        self.lieu_decor=lieu_decor
+        self.background_color = arcade.csscolor.BEIGE
+        self.mob=mob
+        self.mob.preparer_visuel_mort()
+        self.liste_personnages=arcade.SpriteList()
+        self.personnage.center_x=520
+        self.personnage.center_y=260
+        self.liste_personnages.append(self.personnage)
+        self.liste_mobs=arcade.SpriteList()
+        self.liste_mobs.append(self.mob)
+        #inventaire
+        self.loot_table_texture=arcade.load_texture("images/UI/loot_table.png")
+        self.loot_table_sprite=arcade.Sprite(self.loot_table_texture,scale=0.2)
+        self.loot_table_sprite.center_x=WINDOW_WIDTH//2
+        self.loot_table_sprite.center_y=500
+        self.loot_table_sprite_list=arcade.SpriteList()
+        self.loot_table_sprite_list.append(self.loot_table_sprite)
+        
+        #décor
+        self.decor_texture=arcade.load_texture(self.lieu_decor)
+        self.decor_sprite=arcade.Sprite(self.decor_texture,scale=0.7)
+        self.decor_sprite.center_x=WINDOW_WIDTH//2
+        self.decor_sprite.center_y=WINDOW_HEIGHT//2
+        self.decor_sprite_list=arcade.SpriteList()
+        self.decor_sprite_list.append(self.decor_sprite)
+        
+        #choix
+        self.ui_loot_texture=arcade.load_texture("images/UI/equiper.png")
+        self.ui_loot_sprite_equiper=arcade.Sprite(self.ui_loot_texture,scale=0.08)
+        self.ui_loot_sprite_equiper.center_x=WINDOW_WIDTH//2 -100   
+        self.ui_loot_sprite_equiper.center_y=350
+        self.ui_loot_abandonner_texture=arcade.load_texture("images/UI/abandonner.png")
+        self.ui_loot_sprite_abandonner=arcade.Sprite(self.ui_loot_abandonner_texture,scale=0.08)
+        self.ui_loot_sprite_abandonner.center_x=WINDOW_WIDTH//2 +100    
+        self.ui_loot_sprite_abandonner.center_y=350
+        self.ui_loot_sprite_list=arcade.SpriteList()
+        self.ui_loot_sprite_list.append(self.ui_loot_sprite_equiper)
+        self.ui_loot_sprite_list.append(self.ui_loot_sprite_abandonner)
+        
+        self.ui_loot_unique_texture=arcade.load_texture("images/UI/loot_item_unique.png")
+        self.ui_loot_unique_sprite=arcade.Sprite(self.ui_loot_unique_texture,scale=0.2)
+        self.ui_loot_unique_sprite.center_x=WINDOW_WIDTH//2
+        self.ui_loot_unique_sprite.center_y=500
+        self.ui_prendre_texture=arcade.load_texture("images/UI/prendre.png")
+        self.ui_prendre_sprite=arcade.Sprite(self.ui_prendre_texture,scale=0.1)
+        self.ui_prendre_sprite.center_x=WINDOW_WIDTH//2 
+        self.ui_prendre_sprite.center_y=350
+        self.ui_loot_unique_sprite_list=arcade.SpriteList()
+        self.ui_loot_unique_sprite_list.append(self.ui_loot_unique_sprite)
+        self.ui_loot_unique_sprite_list.append(self.ui_prendre_sprite)
+
+    def on_draw(self):
+        self.clear()
+        self.decor_sprite_list.draw()
+        self.liste_personnages.draw()
+        self.liste_mobs.draw()
+        arcade.draw_text(f"Vous avez ramassé un objet de rareté : {self.loot[0]}", 
+                         WINDOW_WIDTH / 2, 
+                         700,
+                         arcade.color.BLACK, 
+                         font_size=30, 
+                         anchor_x="center", 
+                         anchor_y="center")
+        
+        
+        
+        x_gauche = self.loot_table_sprite.center_x - 150
+        y_haut = self.loot_table_sprite.center_y + 20
+        if self.personnage.prochaine_arme is not None:
+            self.loot_table_sprite_list.draw()
+            self.ui_loot_sprite_list.draw()
+            self.loot_arme_sprite=arcade.Sprite(self.personnage.arme.texture,scale=0.05)
+            self.loot_arme_sprite.center_x=x_gauche + 50
+            self.loot_arme_sprite.center_y=y_haut + 13
+
+            self.loot_prochaine_arme_sprite=arcade.Sprite(self.personnage.prochaine_arme.texture,scale=0.05)
+            self.loot_prochaine_arme_sprite.center_x=x_gauche + 250
+            self.loot_prochaine_arme_sprite.center_y=y_haut + 13
+            self.loot_arme=arcade.SpriteList()
+            self.loot_arme.append(self.loot_arme_sprite)
+            self.loot_arme.append(self.loot_prochaine_arme_sprite)  
+            self.loot_arme.draw()
+            arcade.draw_text(self.personnage.arme.nom, 
+                        x_gauche +20, y_haut-47, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Degats : {self.personnage.arme.degats}", 
+                        x_gauche +20, y_haut-67, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Rareté : {self.personnage.arme.rarete}", 
+                        x_gauche +20, y_haut-87, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(self.personnage.prochaine_arme.nom, 
+                        x_gauche +210, y_haut-47, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Degats : {self.personnage.prochaine_arme.degats}", 
+                        x_gauche +200, y_haut-67, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)  
+            arcade.draw_text(f"Rareté : {self.personnage.prochaine_arme.rarete}", 
+                        x_gauche +200, y_haut-87, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)             
+        elif self.personnage.prochaine_armure is not None:
+            self.loot_table_sprite_list.draw()
+            self.ui_loot_sprite_list.draw()
+            self.image_loot_sprite=arcade.Sprite(self.personnage.armure.texture,scale=0.05)
+            self.image_loot_sprite.center_x=x_gauche + 50
+            self.image_loot_sprite.center_y=y_haut +13
+            self.image_prochaine_armure_sprite=arcade.Sprite(self.personnage.prochaine_armure.texture,scale=0.05)
+            self.image_prochaine_armure_sprite.center_x=x_gauche + 250
+            self.image_prochaine_armure_sprite.center_y=y_haut + 13
+            self.image_loot=arcade.SpriteList()
+            self.image_loot.append(self.image_loot_sprite)
+            self.image_loot.append(self.image_prochaine_armure_sprite)
+            self.image_loot.draw()
+            arcade.draw_text(self.personnage.armure.nom, 
+                        x_gauche +20, y_haut-47, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Défense : {self.personnage.armure.defense}", 
+                        x_gauche +20, y_haut-67, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Rareté : {self.personnage.armure.rarete}", 
+                        x_gauche +20, y_haut-87, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(self.personnage.prochaine_armure.nom, 
+                        x_gauche +220, y_haut-47, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text(f"Défense : {self.personnage.prochaine_armure.defense}", 
+                        x_gauche +200, y_haut-67, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)  
+            arcade.draw_text(f"Rareté : {self.personnage.prochaine_armure.rarete}", 
+                        x_gauche +200, y_haut-87, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+        elif self.loot[0]=="commun":
+            self.ui_loot_unique_sprite_list.draw()
+            arcade.draw_text("Potion de soin", 
+                        x_gauche +120, y_haut-65, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=12)
+            arcade.draw_text("Restaure 50 points de vie", 
+                        x_gauche +80, y_haut-80, # x, y à ajuster selon ton image
+                        arcade.color.BLACK, font_size=10)
+        
+        
+    def on_key_press(self, key, modifiers):
+    # C'est ici que nous vérifions quelle touche a été pressée
+        if key==arcade.key.ESCAPE:
+            self.window.set_fullscreen(False)
+        if key==arcade.key.F5:
+            self.window.show_view(LevelView(self.personnage,self.lieu_decor,self.mob))
+    
+    def on_update(self, delta_time):
+        self.liste_personnages.update()
+        
+    
 def main():
     """Main function"""
     window=arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE,fullscreen=True)

@@ -1,4 +1,6 @@
 import arcade
+import random
+from items.mage_item import *
 from personnages.entite_animee import EntiteAnimee
 class Mage(EntiteAnimee):
     def __init__(self):
@@ -37,14 +39,23 @@ class Mage(EntiteAnimee):
         self.mana_max = 100
         self.defense = 10
         
+        self.arme=baton_base()
+        self.prochaine_arme=None
+        self.armure=robe_base()
+        self.prochaine_armure=None
+        self.inventaire = []
+        
     def attaque_normale(self, cible):
-        degats = 10
+        degats = self.arme.degats
         self.mana -= 15
         if self.mana < 0:
             self.mana = 0
         cible.recevoir_degats(degats)
-
-        cible.choix_attaque(self)
+        if cible.sante < 0:
+            cible.sante = 0
+            cible.drop_loot(self)
+        if cible.sante > 0:
+            cible.choix_attaque(self)
         print(f"Le mage attaque et inflige {degats} points de dégâts. Santé restante de la cible : {cible.sante}")
     
     def meditation(self):
@@ -52,4 +63,30 @@ class Mage(EntiteAnimee):
         self.mana = min(self.mana + mana_recuperee, self.mana_max)
         print(f"Le mage médite et récupère {mana_recuperee} points de mana. Mana actuelle : {self.mana}")
         
+    def rammasser_loot(self, loot):
+        self.prochaine_arme=None
+        self.prochaine_armure=None
+        print(f"Le mage ramasse un objet de rareté : {loot}")
+        if loot[0] == "légendaire":
+            self.prochaine_arme=loot[1]
+            
+        elif loot[0] == "rare":
+            self.prochaine_armure=loot[1]
+        elif loot[0] == "commun":
+            print("Objet commun ramassé, pas d'amélioration.")
+        else:
+            print("Rien à ramasser.")
     
+    def attaque_spéciale(self, cible):
+        if self.mana >= self.arme.mana_cout_speciale:
+            self.mana -= self.arme.mana_cout_speciale
+            self.arme.attaque_speciale(cible)
+            if cible.sante < 0:
+                cible.sante = 0
+                cible.drop_loot(self)
+            if cible.sante > 0:
+                cible.choix_attaque(self)
+            
+        else:
+            print("Pas assez de mana pour l'attaque spéciale.")
+        
