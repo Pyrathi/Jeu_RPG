@@ -217,7 +217,7 @@ class LevelView(arcade.View):
                     combat_view=CombatView(self.personnage,self.lieu_decor,self.mob)
                     self.window.show_view(combat_view)
                 elif choix==self.choix_fuite_sprite:
-                    game_view=GameView()
+                    game_view=VillageView(self.personnage,"images/decor/taverne.png")
                     self.window.show_view(game_view)
     def on_draw(self):
         self.clear()
@@ -361,6 +361,15 @@ class CombatView(arcade.View):
                         font_size=15, 
                         anchor_x="center", 
                         anchor_y="center")
+                        
+        arcade.draw_text("Attaque spéciale", 
+                        self.ui_combat_sprite4.center_x,
+                        self.ui_combat_sprite4.center_y,
+                        arcade.color.BLACK,
+                        font_size=15,
+                        anchor_x="center",
+                        anchor_y="center")
+        # Infos survol
         
         if self.survol_vie_heros:
             # Afficher la santé actuelle et maximale
@@ -411,6 +420,15 @@ class CombatView(arcade.View):
                     if hasattr(self.personnage, 'meditation'):
                         self.personnage.meditation()
                         print(f"Mana du personnage après méditation : {self.personnage.mana}")
+                elif choix==self.ui_combat_sprite4:
+                    if hasattr(self.personnage, 'attaque_spéciale'):
+                        self.personnage.attaque_spéciale(self.mob)
+                        print(f"Santé du mob après attaque spéciale : {self.mob.sante}")
+                        if self.mob.sante <= 0:
+                            print("Le mob est vaincu !")
+                            loot=self.mob.drop_loot(self.personnage)
+                            loot_view=LootView(self.personnage,loot,self.lieu_decor,self.mob)
+                            self.window.show_view(loot_view)
         
     def on_mouse_motion(self, x, y, dx, dy):
         self.survol_mana_heros=False
@@ -500,19 +518,20 @@ class LootView(arcade.View):
         self.decor_sprite_list.draw()
         self.liste_personnages.draw()
         self.liste_mobs.draw()
-        arcade.draw_text(f"Vous avez ramassé un objet de rareté : {self.loot[0]}", 
-                         WINDOW_WIDTH / 2, 
-                         700,
-                         arcade.color.BLACK, 
-                         font_size=30, 
-                         anchor_x="center", 
-                         anchor_y="center")
+        
         
         
         
         x_gauche = self.loot_table_sprite.center_x - 150
         y_haut = self.loot_table_sprite.center_y + 20
         if self.personnage.prochaine_arme is not None:
+            arcade.draw_text(f"Vous avez ramassé un objet de rareté : {self.loot[0]}", 
+                         WINDOW_WIDTH / 2, 
+                         700,
+                         arcade.color.BLACK, 
+                         font_size=30, 
+                         anchor_x="center", 
+                         anchor_y="center")
             self.loot_table_sprite_list.draw()
             self.ui_loot_sprite_list.draw()
             self.loot_arme_sprite=arcade.Sprite(self.personnage.arme.texture,scale=0.05)
@@ -545,6 +564,13 @@ class LootView(arcade.View):
                         x_gauche +200, y_haut-87, # x, y à ajuster selon ton image
                         arcade.color.BLACK, font_size=12)             
         elif self.personnage.prochaine_armure is not None:
+            arcade.draw_text(f"Vous avez ramassé un objet de rareté : {self.loot[0]}", 
+                         WINDOW_WIDTH / 2, 
+                         700,
+                         arcade.color.BLACK, 
+                         font_size=30, 
+                         anchor_x="center", 
+                         anchor_y="center")
             self.loot_table_sprite_list.draw()
             self.ui_loot_sprite_list.draw()
             self.image_loot_sprite=arcade.Sprite(self.personnage.armure.texture,scale=0.05)
@@ -576,13 +602,42 @@ class LootView(arcade.View):
                         x_gauche +200, y_haut-87, # x, y à ajuster selon ton image
                         arcade.color.BLACK, font_size=12)
         elif self.loot[0]=="commun":
+            arcade.draw_text(f"Vous avez ramassé un objet de rareté : {self.loot[0]}", 
+                         WINDOW_WIDTH / 2, 
+                         700,
+                         arcade.color.BLACK, 
+                         font_size=30, 
+                         anchor_x="center", 
+                         anchor_y="center")
+            
             self.ui_loot_unique_sprite_list.draw()
             arcade.draw_text("Potion de soin", 
                         x_gauche +120, y_haut-65, # x, y à ajuster selon ton image
                         arcade.color.BLACK, font_size=12)
-            arcade.draw_text("Restaure 50 points de vie", 
+            arcade.draw_text(self.personnage.objet_recupere.description, 
                         x_gauche +80, y_haut-80, # x, y à ajuster selon ton image
                         arcade.color.BLACK, font_size=10)
+            self.consommable_sprite=arcade.Sprite(self.personnage.objet_recupere.texture,scale=1.3)
+            self.consommable_sprite.center_x=WINDOW_WIDTH//2
+            self.consommable_sprite.center_y=500
+            self.consommable_sprite_list=arcade.SpriteList()
+            self.consommable_sprite_list.append(self.consommable_sprite)
+            self.consommable_sprite_list.draw()
+        elif self.loot[0]=="aucun":
+            arcade.draw_text(f"Vous n'avez ramassé aucun objet.", 
+                         WINDOW_WIDTH / 2, 
+                         400,
+                         arcade.color.BLACK, 
+                         font_size=30, 
+                         anchor_x="center", 
+                         anchor_y="center")
+            self.ui_continuer_texture=arcade.load_texture("images/UI/continuer.png")
+            self.ui_continuer_sprite=arcade.Sprite(self.ui_continuer_texture,scale=0.1)
+            self.ui_continuer_sprite.center_x=WINDOW_WIDTH//2
+            self.ui_continuer_sprite.center_y=350
+            self.ui_continuer_sprite_list=arcade.SpriteList()
+            self.ui_continuer_sprite_list.append(self.ui_continuer_sprite)
+            self.ui_continuer_sprite_list.draw()
         
         
     def on_key_press(self, key, modifiers):
@@ -594,6 +649,40 @@ class LootView(arcade.View):
     
     def on_update(self, delta_time):
         self.liste_personnages.update()
+        
+class VillageView(arcade.View):
+    """View to show the village of the game."""
+    def __init__(self, personnage, lieu_decor):
+        super().__init__()
+        # Initialisation du village
+        self.background_color = arcade.csscolor.BEIGE
+        self.personnage=personnage
+        self.personnage.center_x=520
+        self.personnage.center_y=260
+        self.liste_personnages=arcade.SpriteList()
+        self.liste_personnages.append(self.personnage)
+        self.lieu_decor=lieu_decor
+        #décor
+        self.decor_texture=arcade.load_texture(self.lieu_decor)
+        self.decor_sprite=arcade.Sprite(self.decor_texture,scale=1.8)
+        self.decor_sprite.center_x=WINDOW_WIDTH//2
+        self.decor_sprite.center_y=WINDOW_HEIGHT//2+50
+        self.decor_sprite_list=arcade.SpriteList()
+        self.decor_sprite_list.append(self.decor_sprite)
+
+    def on_draw(self):
+        self.clear()
+        self.decor_sprite_list.draw()
+        self.liste_personnages.draw()
+        # Dessiner le village ici
+    def on_key_press(self, key, modifiers):
+        if key==arcade.key.ESCAPE:
+            self.window.set_fullscreen(False)
+        if key==arcade.key.F5:
+            self.window.show_view(LevelView(self.personnage,self.lieu_decor,self.mob))
+    
+    
+    
         
     
 def main():

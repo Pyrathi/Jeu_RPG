@@ -5,7 +5,7 @@ class EntiteAnimee(arcade.Sprite):
         super().__init__()
         self.textures = []
         self.cur_texture_index = 0
-        self.frame_count = 0
+        self.frame_count = 0                                                                                                                                                                                                                                                                                                                                                                                                                                                      
     
     # Dans personnages/entite_animee.py
     def recevoir_degats(self, montant):

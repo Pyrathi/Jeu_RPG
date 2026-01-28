@@ -2,6 +2,7 @@ import arcade
 import random
 from personnages.entite_animee import EntiteAnimee
 from items.mage_item import *
+from items.objet import *
 class Loup(EntiteAnimee):
     def __init__(self):
         super().__init__()
@@ -58,7 +59,7 @@ class Loup(EntiteAnimee):
         
     def drop_loot(self,cible):
         loot=[]
-        loot_chance = random.random()
+        loot_chance = 0.6
         if loot_chance < 0.2:
             loot.append("légendaire")
             loot.append(baton_vide())
@@ -69,6 +70,7 @@ class Loup(EntiteAnimee):
             cible.rammasser_loot(loot)
         elif loot_chance < 0.8 and loot_chance >= 0.5:
             loot.append("commun")
+            loot.append(potion_sante_petite())
             cible.rammasser_loot(loot)
         elif loot_chance >= 0.8:
             loot.append("aucun")
